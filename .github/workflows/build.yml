@@ -5,23 +5,20 @@ on:
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
-      - name: Checkout Repository & Submodules
+      - name: Checkout Repository with Submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Set Xcode Version
-        run: sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer
-
       - name: Build Unsigned IPA
         run: |
-          # 1. Force update and init all submodules
+          # 1. Initialize git submodules
           git submodule update --init --recursive
 
-          # 2. Build using the workspace file
+          # 2. Build Clip target using workspace
           xcodebuild build \
             -workspace Clip.xcworkspace \
             -scheme Clip \
@@ -33,7 +30,7 @@ jobs:
             PROVISIONING_PROFILE_SPECIFIER="" \
             DERIVED_DATA_DIR=build
 
-          # 3. Create Payload and package IPA
+          # 3. Package build into Payload directory for IPA
           mkdir -p Payload
           cp -r build/Build/Products/Release-iphoneos/Clip.app Payload/
           zip -r Clip.ipa Payload
